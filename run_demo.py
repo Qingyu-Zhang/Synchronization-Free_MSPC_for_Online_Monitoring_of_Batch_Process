@@ -28,6 +28,9 @@ def main():
     # Step 1: 加载数据
     filepath = "data/example_augmented.csv"
     X_augmented = load_augmented_data(filepath)
+    X_augmented = X_augmented[:,1:]
+    X_augmented = X_augmented.astype(np.float64)
+    
     print(f"读取训练用NOC批次光谱数据合并矩阵 shape: {X_augmented.shape}")
 
     # Step 2: 全局PCA并获得得分矩阵
@@ -45,8 +48,11 @@ def main():
     local_models = build_local_models(X_augmented, cluster_path, cluster_index_map,
                                       n_components=A, alpha=ALPHA)
 
-    # Step 5: 模拟一个新批次（这里只取原始数据的前20行作为演示）
-    new_batch = X_augmented[:20]
+    # Step 5: 新批次数据
+    new_batch = load_augmented_data('data/example_newbatch_B89_Faulty.csv')
+    new_batch = new_batch[:,2:]
+    new_batch = new_batch.astype(np.float64)
+    
     min_qrs = []
     latest_valid_model_idx = None  # 用于论文忠实复现功能，可选择开启（使用最近一个正常点(NOC)的最小Qr的local MSPC模型）
 

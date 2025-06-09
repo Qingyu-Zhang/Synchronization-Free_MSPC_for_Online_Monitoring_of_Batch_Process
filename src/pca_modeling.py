@@ -40,7 +40,7 @@ def compute_q_lim(eigenvals_unused, alpha=0.95):
 
     return Q_lim
 
-def train_local_pca(X_local, n_components=3, alpha=0.99):
+def train_local_pca(X_local, n_components=3, alpha=0.95):
     """
     拟合局部PCA模型并计算对应的Q_lim控制限。
 
@@ -52,13 +52,20 @@ def train_local_pca(X_local, n_components=3, alpha=0.99):
     返回：
         dict: 包含PCA模型主成分、均值、Q_lim等信息的字典
     """
+    #若一维则强制二维
+    if X_local.ndim == 1:
+        X_local = X_local.reshape(1, -1)
+    
+        
     # 手动中心化数据
     X_mean = np.mean(X_local, axis=0)
     X_centered = X_local - X_mean
+    
 
     # 拟合PCA
     pca = PCA(n_components=n_components, svd_solver='full')
     pca.fit(X_centered)
+
 
     # 使用协方差矩阵计算完整特征值
     cov = np.cov(X_centered, rowvar=False)

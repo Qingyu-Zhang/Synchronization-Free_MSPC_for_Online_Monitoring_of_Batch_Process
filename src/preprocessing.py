@@ -7,6 +7,30 @@
 
 import pandas as pd
 import numpy as np
+import os
+
+def load_and_concatenate_batches(folder_path):
+    """
+    将一个目录下所有 NOC 批次的 csv 文件拼接成一个大 DataFrame。
+    每个文件为一个批次的光谱矩阵（按时间顺序），列为波长。
+
+    参数：
+        folder_path (str): 包含多个 batch 的 csv 文件夹路径
+
+    返回：
+        pd.DataFrame: 拼接后的大 DataFrame（所有 batch 按行堆叠）
+    """
+    all_batches = []
+
+    for fname in sorted(os.listdir(folder_path)):
+        if fname.endswith('.csv'):
+            fpath = os.path.join(folder_path, fname)
+            df = pd.read_csv(fpath, header=0)  # 假设第一行是列名（波长）
+            all_batches.append(df)
+
+    X_augmented_df = pd.concat(all_batches, axis=0, ignore_index=True)
+    return X_augmented_df
+
 
 def load_augmented_data(filepath):
     """
