@@ -38,7 +38,7 @@ def build_cluster_path(centers):
     """
     G = len(centers)
     visited = []
-    current = np.argmax(centers[:, 0])  # 从PC1最大值开始
+    current = np.argmin(centers[:, 0])  # 从PC1最小值开始
     visited.append(current)
 
     while len(visited) < G:
@@ -66,3 +66,29 @@ def build_cluster_index_map(labels):
             cluster_to_indices[label] = []
         cluster_to_indices[label].append(i)
     return cluster_to_indices
+
+def get_cluster_path_from_user(G):
+    """
+    获取用户输入的 cluster_path，并验证其长度是否为 G。
+
+    参数：
+        G (int): 聚类个数
+
+    返回：
+        List[int] or None: 用户输入的 cluster_path 列表，若失败则返回 None
+    """
+    user_input = input(f"请输入 cluster_path（共 {G} 个，用逗号分隔，如：3, 0, 2, ...）：")
+
+    try:
+        cluster_path = [int(x.strip()) for x in user_input.split(",")]
+
+        if len(cluster_path) != G:
+            print(f"❌ 输入的 cluster 数量为 {len(cluster_path)}，但应为 {G} 个。请重新输入。")
+            return None
+
+        print(f"✅ 你输入的 cluster_path 是：{cluster_path}")
+        return cluster_path
+
+    except ValueError:
+        print("❌ 输入格式错误！请确保只输入整数，用英文逗号分隔。")
+        return None
