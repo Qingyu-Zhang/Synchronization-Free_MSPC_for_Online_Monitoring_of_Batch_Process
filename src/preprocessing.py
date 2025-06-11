@@ -32,7 +32,7 @@ def load_and_concatenate_batches(folder_path):
     return X_augmented_df
 
 
-def load_augmented_data(filepath):
+def load_data(filepath):
     """
     从CSV文件中读取拼接后的NOC批次光谱数据，并返回为numpy数组。
 
@@ -40,10 +40,10 @@ def load_augmented_data(filepath):
         filepath (str): 数据文件路径（CSV）
 
     返回：
-        np.ndarray: shape = (n_samples, n_features) 的光谱数据矩阵
+        DataFrame: shape = (n_samples, n_features) 的光谱数据矩阵
     """
     df = pd.read_csv(filepath)
-    return df.to_numpy()
+    return df
 
 def standard_normal_variate(X):
     """

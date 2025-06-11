@@ -10,7 +10,7 @@
 
 import numpy as np
 import pandas as pd
-from src.preprocessing import load_augmented_data
+from src.preprocessing import load_data
 from src.pca_modeling import PCA
 from src.clustering import perform_kmeans, build_cluster_path, build_cluster_index_map, get_cluster_path_from_user
 from src.mspc_local import build_local_models
@@ -20,26 +20,38 @@ from src.utils import ensure_dir, save_q_curve, save_contribution_plot
 from src.visualization import plot_pca_2d, plot_pca_3d
 
 
-# 全局参数
-A = 2         # PCA保留主成分数
-G = 10        # KMeans聚类数
-ALPHA = 0.95  # Q统计量置信水平
-Use_Last_NOC_Model = False  #画异常点特征贡献图时是否使用最近的NOC的最小Qr local model
-Mannual_Path = True  #是否根据可视化轨迹手动输入路径编号顺序
 
-def main():
+def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.95, Use_Last_NOC_Model=False, Mannual_Path=True):
+    """
+    运行全流程
+    包括：
+    - 加载数据
+    - 全局PCA + 聚类
+    - 构建局部MSPC模型
+    - 监控一个新批次
+    - 生成Q曲线与贡献图
+
+    参数：
+        X_augmented (DataFrame): shape = (n_samples, n_features)的所有NOC批次合并的增广矩阵
+        new_batch (DataFrame): shape = (m_samples, n_features)的新批次数据矩阵
+        n_components (int)： PCA保留的主成分个数，接受2或3
+        G (int): KMeans聚类个数
+        ALPHA (int): Q统计量置信水平
+        Use_Last_NOC_Model (bool): 画异常点特征贡献图时是否使用最近的NOC的最小Qr local model
+        Mannual_Path (bool): 是否根据可视化轨迹手动输入路径编号顺序
+
+    返回：None
+    """
     # Step 1: 加载数据
-    filepath = "data/example_augmented.csv"
-    X_augmented = load_augmented_data(filepath)
-    X_augmented = X_augmented[:,1:]
-    X_augmented = X_augmented.astype(np.float64)
+    feature_names = list(X_augmented.columns)   # DataFrame.columns是pandas.Index类型
+    X_augmented = X_augmented.to_numpy().astype(np.float64)
 
     print(f"读取训练用NOC批次光谱数据合并矩阵 shape: {X_augmented.shape}")
 
     # Step 2: 全局PCA并获得得分矩阵
     X_mean = np.mean(X_augmented, axis=0)
     X_centered = X_augmented - X_mean
-    pca_global = PCA(n_components=A)
+    pca_global = PCA(n_components=n_components)
     T_all = pca_global.fit_transform(X_centered)
 
     # Step 3: KMeans聚类
@@ -47,11 +59,11 @@ def main():
 
     # 可视化步骤
     ensure_dir("results/visualization")
-    if A == 2:
+    if n_components == 2:
         plot_pca_2d(T_all, labels=labels, title="PCA Score Plot (2D)",
                     save_path="results/visualization/pca_2d.png")
 
-    if A >= 3:
+    if n_components >= 3:
         plot_pca_3d(T_all, labels=labels, title="PCA Score Plot (3D)",
                     save_path="results/visualization/pca_3d.png")
 
@@ -66,12 +78,11 @@ def main():
 
     # Step 4: 构建local MSPC模型
     local_models = build_local_models(X_augmented, cluster_path, cluster_index_map,
-                                      n_components=A, alpha=ALPHA)
+                                      n_components=n_components, alpha=ALPHA)
 
     # Step 5: 新批次数据
-    new_batch = load_augmented_data('data/example_newbatch_B64_Faulty.csv')
-    new_batch = new_batch[:,2:]
-    new_batch = new_batch.astype(np.float64)
+    new_batch = new_batch.to_numpy().astype(np.float64)
+    print("新批次矩阵shape:", new_batch.shape)
 
     min_qrs = []
     latest_valid_model_idx = None  # 用于论文忠实复现功能，可选择开启（使用最近一个正常点(NOC)的最小Qr的local MSPC模型）
@@ -90,7 +101,7 @@ def main():
                 use_latest_noc_model=Use_Last_NOC_Model,
                 latest_valid_model_idx=latest_valid_model_idx
             )
-            save_contribution_plot(e_k,
+            save_contribution_plot(e_k, feature_names,
                                    f"results/contributions/point{k:02d}_fault.png",
                                    title=f"Contribution Plot - Point {k}")
         else:
@@ -99,5 +110,3 @@ def main():
     # Step 6: 保存Q曲线
     save_q_curve(min_qrs, "results/Q_curves/demo_q_curve.png", title="Min Qr Monitoring Demo")
 
-if __name__ == "__main__":
-    main()

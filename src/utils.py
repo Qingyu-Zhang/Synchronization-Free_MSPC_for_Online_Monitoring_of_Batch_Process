@@ -37,20 +37,22 @@ def save_q_curve(qr_values, save_path, title="Q Statistic Curve"):
     plt.savefig(save_path)
     plt.close()
 
-def save_contribution_plot(e, save_path, title="Contribution Plot"):
+def save_contribution_plot(e, feature_names, save_path, title="Contribution Plot"):
     """
     保存贡献图（残差平方）。
 
     参数：
         e (np.ndarray): 残差向量
+        feature_names (List[str]): 特征列名
         save_path (str): 图像保存路径
         title (str): 图标题
     """
-    plt.figure()
-    plt.bar(np.arange(len(e)), e**2)
+    plt.figure(figsize=(12,8))
+    plt.bar(feature_names, e**2)
     plt.title(title)
-    plt.xlabel('Variable index')
+    plt.xlabel('Features')
     plt.ylabel('Squared Residual')
+    plt.xticks(rotation=45, ha='right')  # 避免标签重叠
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
