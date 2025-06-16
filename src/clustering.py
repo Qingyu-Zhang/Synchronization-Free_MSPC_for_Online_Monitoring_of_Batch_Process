@@ -8,6 +8,11 @@
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances
+from scipy.spatial.distance import pdist, squareform
+from scipy.sparse.csgraph import minimum_spanning_tree
+from scipy.sparse import csr_matrix
+from collections import deque
+
 
 def perform_kmeans(T_all, n_clusters=10, random_state=0):
     """
@@ -49,6 +54,78 @@ def build_cluster_path(centers):
         current = next_idx
 
     return visited
+
+def build_cluster_path_mst(centers: np.ndarray) -> list:
+    """
+    基于最小生成树（MST）+ 最长路径启发 + 最近邻插入 的聚类路径构建方法。
+
+    参数：
+        centers (np.ndarray): 每个聚类的中心点坐标，shape = (G, A)
+
+    返回：
+        List[int]: 聚类顺序路径，例如 [3, 0, 5, 2, ...]
+    """
+    G = len(centers)
+    if G <= 2:
+        return list(range(G))
+
+    # Step 1: 计算欧氏距离矩阵并构建MST（无向图）
+    dist_matrix = squareform(pdist(centers))
+    mst = minimum_spanning_tree(dist_matrix).toarray()
+    graph = mst + mst.T  # 转为无向图
+
+    # Step 2: BFS 找到最长路径的两个端点
+    def bfs_farthest(start):
+        visited = {start}
+        queue = deque([(start, 0)])
+        farthest = (start, 0)
+        while queue:
+            node, dist = queue.popleft()
+            if dist > farthest[1]:
+                farthest = (node, dist)
+            for neighbor in np.where(graph[node] > 0)[0]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append((neighbor, dist + graph[node, neighbor]))
+        return farthest
+
+    A, _ = bfs_farthest(0)
+    B, _ = bfs_farthest(A)
+
+    # Step 3: 回溯获取 A 到 B 的路径（主干路径）
+    def get_path(u, v):
+        parent = {u: None}
+        queue = deque([u])
+        while queue:
+            curr = queue.popleft()
+            if curr == v:
+                break
+            for neighbor in np.where(graph[curr] > 0)[0]:
+                if neighbor not in parent:
+                    parent[neighbor] = curr
+                    queue.append(neighbor)
+        path = []
+        curr = v
+        while curr is not None:
+            path.append(curr)
+            curr = parent[curr]
+        return path[::-1]
+
+    main_path = get_path(A, B)
+
+    # Step 4: 插入未包含的剩余节点（最近邻插入）
+    full_order = main_path.copy()
+    unused = set(range(G)) - set(full_order)
+    while unused:
+        insert_idx = unused.pop()
+        # 找到full_order中距离该点最近的位置插入
+        dists = {i: np.linalg.norm(centers[insert_idx] - centers[i]) for i in full_order}
+        nearest = min(dists, key=dists.get)
+        pos = full_order.index(nearest)
+        full_order.insert(pos + 1, insert_idx)
+
+    return full_order
+
 
 def build_cluster_index_map(labels):
     """
