@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from src.preprocessing import load_data
 from src.pca_modeling import PCA
-from src.clustering import perform_kmeans, build_cluster_path, build_cluster_index_map, get_cluster_path_from_user
+from src.clustering import perform_kmeans, build_cluster_path, build_cluster_index_map, get_cluster_path_from_user, build_cluster_path_mst
 from src.mspc_local import build_local_models
 from src.monitoring import monitor_new_point
 from src.diagnostics import get_contribution_vector
@@ -21,7 +21,7 @@ from src.visualization import plot_pca_2d, plot_pca_3d
 
 
 
-def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.95, Use_Last_NOC_Model=False, Mannual_Path=True):
+def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.95, Use_Last_NOC_Model=False, Mannual_Path=True, MST_Path=True):
     """
     运行全流程
     包括：
@@ -70,7 +70,11 @@ def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.95, 
     if Mannual_Path:
         cluster_path = get_cluster_path_from_user(G)
     else:
-        cluster_path = build_cluster_path(centers)
+        if MST_Path:
+            cluster_path = build_cluster_path_mst(centers)
+        else:
+            cluster_path = build_cluster_path(centers)
+
         print("cluster_path:", cluster_path)
 
     cluster_index_map = build_cluster_index_map(labels)
