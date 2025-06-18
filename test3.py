@@ -9,7 +9,7 @@ def main():
     new_batch_filepath = "data/example_newbatch_B41_NOC.csv"
     new_batch = load_data(new_batch_filepath).iloc[:,1:]
 
-    run_whole_process(X_augmented, new_batch, n_components=3,  Mannual_Path=False)
+    run_whole_process(X_augmented, new_batch, n_components=3,  Mannual_Path=False, G=30)
 
 
 

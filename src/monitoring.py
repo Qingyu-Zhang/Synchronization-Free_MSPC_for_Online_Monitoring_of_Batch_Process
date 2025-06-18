@@ -23,13 +23,17 @@ def monitor_new_point(x_k, models):
     for model in models:
         P = model['P']
         X_mean = model['X_mean']
+        X_std = model['X_std']
         Q_lim = model['Q_lim']
 
-        x_centered = x_k - X_mean   #中心化
-        t = x_centered @ P          #投影
-        x_hat = t @ P.T + X_mean    #重构观测点x_k
-        e = x_k - x_hat             #计算重构误差向量e
-        Q = np.sum(e**2)
+        x_standardized = (x_k - X_mean) / X_std     #标准化
+        t = x_standardized @ P                      #投影
+        x_hat = (t @ P.T) * X_std + X_mean          #重构观测点x_k (在原始单位下）
+        e = x_k - x_hat                             #计算重构误差向量e（原始单位）
+        Q = np.sum(e ** 2)
+        # x_hat_standardized = t @ P.T
+        # e_standardized = x_standardized - x_hat_standardized
+        # Q = np.sum(e_standardized ** 2)
         Qr = Q / Q_lim
         Qr_all.append(Qr)
 

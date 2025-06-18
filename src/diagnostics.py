@@ -31,11 +31,12 @@ def get_contribution_vector(x_k, models, Qr_k_all, use_latest_noc_model=False, l
     model = models[model_idx]
     P = model['P']
     X_mean = model['X_mean']
+    X_std = model['X_std']
 
-    x_centered = x_k - X_mean
-    t = x_centered @ P
-    x_hat = t @ P.T + X_mean
-    e = x_k - x_hat
+    x_standardized = (x_k - X_mean) / X_std     # 标准化
+    t = x_standardized @ P                      # 投影到主成分
+    x_hat = (t @ P.T) * X_std + X_mean          # 重构（到原始单位）
+    e = x_k - x_hat                             # 计算重构误差/残差（在原始单位下）
 
     return e, model_idx
 

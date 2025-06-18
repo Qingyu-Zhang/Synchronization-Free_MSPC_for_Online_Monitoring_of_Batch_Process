@@ -116,7 +116,10 @@ def build_cluster_path_mst(centers: np.ndarray) -> list:
     # Step 4: 插入未包含的剩余节点（最近邻插入）
     full_order = main_path.copy()
     unused = set(range(G)) - set(full_order)
+    counter=1
     while unused:
+        print(f"插值{counter}次")
+        counter+=1
         insert_idx = unused.pop()
         # 找到full_order中距离该点最近的位置插入
         dists = {i: np.linalg.norm(centers[insert_idx] - centers[i]) for i in full_order}

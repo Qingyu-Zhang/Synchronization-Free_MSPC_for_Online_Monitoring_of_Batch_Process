@@ -50,9 +50,10 @@ def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.95, 
 
     # Step 2: 全局PCA并获得得分矩阵
     X_mean = np.mean(X_augmented, axis=0)
-    X_centered = X_augmented - X_mean
+    X_std = np.std(X_augmented, axis=0)
+    X_standardized = (X_augmented - X_mean) / X_std
     pca_global = PCA(n_components=n_components)
-    T_all = pca_global.fit_transform(X_centered)
+    T_all = pca_global.fit_transform(X_standardized)
 
     # Step 3: KMeans聚类
     labels, centers = perform_kmeans(T_all, n_clusters=G)

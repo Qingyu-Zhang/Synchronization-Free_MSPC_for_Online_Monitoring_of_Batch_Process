@@ -57,18 +57,19 @@ def train_local_pca(X_local, n_components=3, alpha=0.95):
         X_local = X_local.reshape(1, -1)
     
         
-    # 手动中心化数据
+    # 手动标准化数据
     X_mean = np.mean(X_local, axis=0)
-    X_centered = X_local - X_mean
+    X_std = np.std(X_local, axis=0)
+    X_standardized = (X_local - X_mean) / X_std
     
 
     # 拟合PCA
     pca = PCA(n_components=n_components, svd_solver='full')
-    pca.fit(X_centered)
+    pca.fit(X_standardized)
 
 
     # 使用协方差矩阵计算完整特征值
-    cov = np.cov(X_centered, rowvar=False)
+    cov = np.cov(X_standardized, rowvar=False)
     eigenvals_full = np.sort(eigvalsh(cov))[::-1]
     eigenvals_unused = eigenvals_full[n_components:]
 
@@ -78,6 +79,7 @@ def train_local_pca(X_local, n_components=3, alpha=0.95):
     return {
         'P': pca.components_.T,         # 主成分方向矩阵
         'X_mean': X_mean,               # 数据均值
+        'X_std': X_std,                 # 数据标准差
         'Q_lim': Q_lim,                 # 该local MSPC模型的Q统计量控制限
         'explained_variance': pca.explained_variance_
     }
