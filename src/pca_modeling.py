@@ -10,13 +10,13 @@ from sklearn.decomposition import PCA
 from numpy.linalg import eigvalsh
 from scipy.stats import norm
 
-def compute_q_lim(eigenvals_unused, alpha=0.95):
+def compute_q_lim(eigenvals_unused, alpha=0.99):
     """
     使用Jackson & Mudholkar方法计算Q控制限（Q_lim）。
 
     参数：
         eigenvals_unused (np.ndarray): 未保留的主成分特征值（残差子空间）
-        alpha (float): 显著性水平，默认0.95
+        alpha (float): 显著性水平，默认0.99
 
     返回：
         float: Q统计量的控制限
@@ -40,7 +40,7 @@ def compute_q_lim(eigenvals_unused, alpha=0.95):
 
     return Q_lim
 
-def train_local_pca(X_local, n_components=3, alpha=0.95):
+def train_local_pca(X_local, n_components=3, alpha=0.99):
     """
     拟合局部PCA模型并计算对应的Q_lim控制限。
 

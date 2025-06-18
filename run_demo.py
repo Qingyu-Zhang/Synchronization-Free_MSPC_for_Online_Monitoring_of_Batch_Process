@@ -21,7 +21,7 @@ from src.visualization import plot_pca_2d, plot_pca_3d
 
 
 
-def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.95, Use_Last_NOC_Model=False, Mannual_Path=True, MST_Path=True):
+def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.99, Use_Last_NOC_Model=False, Mannual_Path=False, MST_Path=True):
     """
     运行全流程
     包括：

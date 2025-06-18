@@ -7,7 +7,7 @@ local MSPC建模模块：
 import numpy as np
 from src.pca_modeling import train_local_pca
 
-def build_local_models(X_augmented, cluster_path, cluster_index_map, n_components=3, alpha=0.95):
+def build_local_models(X_augmented, cluster_path, cluster_index_map, n_components=3, alpha=0.99):
     """
     基于相邻的clusters构建一系列局部PCA模型。
 
@@ -16,7 +16,7 @@ def build_local_models(X_augmented, cluster_path, cluster_index_map, n_component
         cluster_path (List[int]): 按顺序排列的聚类编号路径
         cluster_index_map (dict): 每个cluster对应的样本索引列表
         n_components (int): PCA保留的主成分数量
-        alpha (float): Q统计量的显著性水平（默认0.95）
+        alpha (float): Q统计量的显著性水平（默认0.99）
 
     返回：
         List[dict]: 每个局部PCA模型的参数字典，包含'P', 'X_mean', 'Q_lim'等
