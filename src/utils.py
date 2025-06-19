@@ -48,7 +48,7 @@ def save_contribution_plot(e, feature_names, save_path, title="Contribution Plot
         title (str): 图标题
     """
     plt.figure(figsize=(12,8))
-    plt.bar(feature_names, e**2)
+    plt.bar(feature_names, e)
     plt.title(title)
     plt.xlabel('Features')
     plt.ylabel('Squared Residual')

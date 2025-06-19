@@ -8,6 +8,7 @@ PCA得分空间可视化模块：
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import plotly.graph_objects as go
 
 def plot_pca_2d(T_all, labels=None, save_path=None, title="PCA Score Plot 2D", label_names=None):
     """
@@ -105,3 +106,122 @@ def plot_pca_3d(T_all, labels=None, save_path=None, title="PCA Score Plot 3D", l
         plt.close()
     else:
         plt.show()
+
+#
+# def plot_pca_3d_interactive(T_all, labels=None, save_path=None, title="PCA Score Plot 3D (Interactive)", label_names=None):
+#     """
+#     使用 Plotly 绘制可交互的 3D PCA 得分图。
+#
+#     参数：
+#         T_all (np.ndarray): shape = (N, 3)，PCA得分
+#         labels (np.ndarray or list): 每个样本的标签（可选）
+#         save_path (str): 如果指定，将图保存为HTML（推荐以 .html 结尾）
+#         title (str): 图标题
+#         label_names (dict): label → 名称映射
+#     """
+#     fig = go.Figure()
+#
+#     if labels is None:
+#         fig.add_trace(go.Scatter3d(
+#             x=T_all[:, 0], y=T_all[:, 1], z=T_all[:, 2],
+#             mode='markers',
+#             marker=dict(size=4, color='gray', opacity=0.7),
+#             name='Data'
+#         ))
+#     else:
+#         labels = np.array(labels)
+#         unique_labels = np.unique(labels)
+#         for label in unique_labels:
+#             idx = labels == label
+#             label_str = label_names[label] if label_names and label in label_names else f"Group {label}"
+#
+#             fig.add_trace(go.Scatter3d(
+#                 x=T_all[idx, 0], y=T_all[idx, 1], z=T_all[idx, 2],
+#                 mode='markers+text',
+#                 marker=dict(size=4, opacity=0.8),
+#                 text=[str(label)] * np.sum(idx),
+#                 name=label_str
+#             ))
+#
+#     fig.update_layout(
+#         scene=dict(
+#             xaxis_title='PC1',
+#             yaxis_title='PC2',
+#             zaxis_title='PC3'
+#         ),
+#         title=title,
+#         width=800,
+#         height=700,
+#         showlegend=True
+#     )
+#
+#     if save_path:
+#         fig.write_html(save_path)
+#     else:
+#         fig.show()
+
+
+
+def plot_pca_3d_interactive(T_all, labels=None, save_path=None, title="PCA Score Plot 3D (Interactive)", label_names=None):
+    """
+    使用 Plotly 绘制可交互的 3D PCA 得分图，仅在每个 cluster 中心标注一个编号。
+
+    参数：
+        T_all (np.ndarray): shape = (N, 3)，PCA得分
+        labels (np.ndarray or list): 每个样本的标签（可选）
+        save_path (str): 如果指定，将图保存为HTML（推荐以 .html 结尾）
+        title (str): 图标题
+        label_names (dict): label → 名称映射
+    """
+    fig = go.Figure()
+
+    if labels is None:
+        fig.add_trace(go.Scatter3d(
+            x=T_all[:, 0], y=T_all[:, 1], z=T_all[:, 2],
+            mode='markers',
+            marker=dict(size=4, color='gray', opacity=0.7),
+            name='Data'
+        ))
+    else:
+        labels = np.array(labels)
+        unique_labels = np.unique(labels)
+        for label in unique_labels:
+            idx = labels == label
+            label_str = label_names[label] if label_names and label in label_names else f"Group {label}"
+
+            # 添加当前 cluster 的点
+            fig.add_trace(go.Scatter3d(
+                x=T_all[idx, 0], y=T_all[idx, 1], z=T_all[idx, 2],
+                mode='markers',
+                marker=dict(size=4, opacity=0.8),
+                name=label_str
+            ))
+
+            # 计算当前 cluster 的中心点，并添加文字标签
+            cx = np.mean(T_all[idx, 0])
+            cy = np.mean(T_all[idx, 1])
+            cz = np.mean(T_all[idx, 2])
+            fig.add_trace(go.Scatter3d(
+                x=[cx], y=[cy], z=[cz],
+                mode='text',
+                text=[str(label)],
+                textposition='middle center',
+                showlegend=False
+            ))
+
+    fig.update_layout(
+        scene=dict(
+            xaxis_title='PC1',
+            yaxis_title='PC2',
+            zaxis_title='PC3'
+        ),
+        title=title,
+        width=800,
+        height=700,
+        showlegend=True
+    )
+
+    if save_path:
+        fig.write_html(save_path)
+    else:
+        fig.show()

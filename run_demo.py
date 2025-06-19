@@ -18,10 +18,11 @@ from src.monitoring import monitor_new_point
 from src.diagnostics import get_contribution_vector
 from src.utils import ensure_dir, save_q_curve, save_contribution_plot
 from src.visualization import plot_pca_2d, plot_pca_3d
+from src.visualization import plot_pca_3d_interactive
 
 
 
-def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.99, Use_Last_NOC_Model=False, Mannual_Path=False, MST_Path=True):
+def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.99, Use_Last_NOC_Model=False, Mannual_Path=False, MST_Path=True, Interactive_3d_Plot=False):
     """
     运行全流程
     包括：
@@ -39,6 +40,7 @@ def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.99, 
         ALPHA (int): Q统计量置信水平
         Use_Last_NOC_Model (bool): 画异常点特征贡献图时是否使用最近的NOC的最小Qr local model
         Mannual_Path (bool): 是否根据可视化轨迹手动输入路径编号顺序
+        Interactive_3d_Plot (bool): 是否生成可互动旋转3d画图
 
     返回：None
     """
@@ -65,6 +67,8 @@ def run_whole_process(X_augmented, new_batch, n_components=2, G=10, ALPHA=0.99, 
                     save_path="results/visualization/pca_2d.png")
 
     if n_components >= 3:
+        if Interactive_3d_Plot:
+            plot_pca_3d_interactive(T_all, labels=labels)
         plot_pca_3d(T_all, labels=labels, title="PCA Score Plot (3D)",
                     save_path="results/visualization/pca_3d.png")
 

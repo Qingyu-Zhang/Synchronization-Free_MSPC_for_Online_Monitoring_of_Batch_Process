@@ -30,10 +30,10 @@ def monitor_new_point(x_k, models):
         t = x_standardized @ P                      #投影
         x_hat = (t @ P.T) * X_std + X_mean          #重构观测点x_k (在原始单位下）
         e = x_k - x_hat                             #计算重构误差向量e（原始单位）
-        Q = np.sum(e ** 2)
-        # x_hat_standardized = t @ P.T
-        # e_standardized = x_standardized - x_hat_standardized
-        # Q = np.sum(e_standardized ** 2)
+        Q = np.sum(e ** 2)                          #计算Q值
+        # x_hat_standardized = t @ P.T                              #在标准化下重构观测点x_standardized（在标准化单位下）
+        # e_standardized = x_standardized - x_hat_standardized      #在标准单位下计算重构误差向量e_standardized（标准化单位）
+        # Q = np.sum(e_standardized ** 2)                           #用标准化的误差计算Q值
         Qr = Q / Q_lim
         Qr_all.append(Qr)
 
